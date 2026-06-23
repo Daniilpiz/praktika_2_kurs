@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+"""
+Binary Tree Sort с интерактивным меню выбора ввода данных.
+"""
+
+import sys
+import os
+import time
+
 class TreeNode:
     """Узел бинарного дерева поиска."""
     def __init__(self, key):
@@ -12,7 +21,6 @@ def insert(root, key):
     if key < root.key:
         root.left = insert(root.left, key)
     else:
-        # Дубликаты отправляем в правое поддерево
         root.right = insert(root.right, key)
     return root
 
@@ -24,7 +32,7 @@ def inorder_traversal(root, sorted_list):
         inorder_traversal(root.right, sorted_list)
 
 def binary_tree_sort(arr):
-    """Основная функция сортировки с помощью BST."""
+    """Сортировка массива через BST."""
     if not arr:
         return []
     root = None
@@ -34,9 +42,162 @@ def binary_tree_sort(arr):
     inorder_traversal(root, result)
     return result
 
-# Пример использования
+def read_numbers_from_file():
+    """Чтение чисел из файла, путь к которому вводит пользователь."""
+    while True:
+        filepath = input("Введите путь к файлу: ").strip()
+        if not filepath:
+            print("Путь не может быть пустым.")
+            continue
+        
+        numbers = []
+        try:
+            with open(filepath, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith('#'):
+                        continue
+                    for token in line.split():
+                        try:
+                            num = float(token)
+                            if num == int(num):
+                                numbers.append(int(num))
+                            else:
+                                numbers.append(num)
+                        except ValueError:
+                            print(f"Предупреждение: пропущено нечисловое значение: '{token}'", file=sys.stderr)
+            
+            if not numbers:
+                print(f"Ошибка: файл '{filepath}' не содержит чисел. Попробуйте другой файл.")
+                continue
+            
+            return numbers
+            
+        except FileNotFoundError:
+            print(f"Ошибка: файл '{filepath}' не найден. Попробуйте снова.")
+        except PermissionError:
+            print(f"Ошибка: нет прав для чтения файла '{filepath}'. Попробуйте снова.")
+        except Exception as e:
+            print(f"Ошибка при чтении файла: {e}. Попробуйте снова.")
+
+def manual_input():
+    """Ручной ввод чисел через терминал."""
+    print("\nВведите числа через пробел или по одному в строке.")
+    print("Для завершения ввода нажмите Enter на пустой строке.\n")
+    numbers = []
+    
+    while True:
+        try:
+            line = input()
+        except EOFError:
+            break
+        
+        if not line.strip():
+            if numbers:
+                break
+            else:
+                print("Вы ещё не ввели ни одного числа. Введите числа или нажмите Ctrl+C для выхода.")
+                continue
+        
+        for token in line.split():
+            try:
+                num = float(token)
+                numbers.append(int(num) if num == int(num) else num)
+            except ValueError:
+                print(f"Предупреждение: '{token}' — не число, пропущено.", file=sys.stderr)
+    
+    return numbers
+
+def write_output(numbers):
+    """Запись отсортированных чисел в файл или вывод в консоль."""
+    print("\nСохранить результат в файл?")
+    print("1. Да")
+    print("2. Нет (вывести в консоль)")
+    
+    while True:
+        choice = input("Ваш выбор (1/2): ").strip()
+        
+        if choice == '1':
+            while True:
+                filepath = input("Введите путь для сохранения файла (Enter — авто в папке скрипта): ").strip()
+                
+                # Если путь не указан, создаём файл в папке со скриптом
+                if not filepath:
+                    script_dir = os.path.dirname(os.path.abspath(__file__))
+                    filepath = os.path.join(script_dir, "sorted_output.txt")
+                    print(f"Путь не указан. Файл будет создан как '{filepath}'")
+                
+                try:
+                    with open(filepath, 'w') as f:
+                        for num in numbers:
+                            f.write(f"{num}\n")
+                    print(f"Результат успешно записан в '{filepath}' ({len(numbers)} чисел).")
+                    return
+                except PermissionError:
+                    print(f"Ошибка: нет прав для записи в '{filepath}'. Попробуйте снова.")
+                except Exception as e:
+                    print(f"Ошибка при записи файла: {e}. Попробуйте снова.")
+        
+        elif choice == '2':
+            print(f"\nОтсортированный массив ({len(numbers)} элементов):")
+            print(numbers[:50] if len(numbers) <= 50 else f"{numbers[:50]}... (показаны первые 50)")
+            return
+        else:
+            print("Неверный выбор. Введите 1 или 2.")
+
+def show_menu():
+    """Отображение главного меню."""
+    print("\n" + "=" * 50)
+    print("           Binary Tree Sort")
+    print("=" * 50)
+    print("1. Загрузить числа из файла")
+    print("2. Ввести числа вручную")
+    print("3. Выход")
+    print("=" * 50)
+
+def main():
+    """Главная функция с меню выбора."""
+    while True:
+        show_menu()
+        choice = input("Ваш выбор (1/2/3): ").strip()
+        
+        if choice == '1':
+            print("\n--- Загрузка из файла ---")
+            data = read_numbers_from_file()
+            
+        elif choice == '2':
+            print("\n--- Ручной ввод ---")
+            data = manual_input()
+            
+        elif choice == '3':
+            print("До свидания!")
+            sys.exit(0)
+        
+        else:
+            print("Неверный выбор. Введите 1, 2 или 3.")
+            continue
+        
+        if not data:
+            print("Ошибка: нет данных для сортировки.")
+            continue
+        
+        print(f"\nИсходный массив ({len(data)} элементов): {data[:20]}{'...' if len(data) > 20 else ''}")
+        
+        # Сортировка
+        start_time = time.time()
+        sorted_data = binary_tree_sort(data)
+        end_time = time.time()
+        
+        # Вывод результата
+        write_output(sorted_data)
+        print(f"\nВремя сортировки: {end_time - start_time:.6f} секунд.")
+        
+        # Возврат в меню
+        input("\nНажмите Enter для возврата в меню...")
+
 if __name__ == "__main__":
-    data = [5, 2, 8, 3, 5, 1, 9, 2]
-    sorted_data = binary_tree_sort(data)
-    print("Исходный массив:", data)
-    print("Отсортированный:", sorted_data)
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\nПрограмма прервана пользователем.")
+        sys.exit(0)
