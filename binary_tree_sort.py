@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Binary Tree Sort с интерактивным меню выбора ввода данных.
+Binary Tree Sort с интерактивным меню.
+При загрузке из файла: Enter → data.txt в папке скрипта.
 """
 
 import sys
@@ -43,42 +44,44 @@ def binary_tree_sort(arr):
     return result
 
 def read_numbers_from_file():
-    """Чтение чисел из файла, путь к которому вводит пользователь."""
-    while True:
-        filepath = input("Введите путь к файлу: ").strip()
-        if not filepath:
-            print("Путь не может быть пустым.")
-            continue
-        
-        numbers = []
-        try:
-            with open(filepath, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if not line or line.startswith('#'):
-                        continue
-                    for token in line.split():
-                        try:
-                            num = float(token)
-                            if num == int(num):
-                                numbers.append(int(num))
-                            else:
-                                numbers.append(num)
-                        except ValueError:
-                            print(f"Предупреждение: пропущено нечисловое значение: '{token}'", file=sys.stderr)
-            
-            if not numbers:
-                print(f"Ошибка: файл '{filepath}' не содержит чисел. Попробуйте другой файл.")
-                continue
-            
-            return numbers
-            
-        except FileNotFoundError:
-            print(f"Ошибка: файл '{filepath}' не найден. Попробуйте снова.")
-        except PermissionError:
-            print(f"Ошибка: нет прав для чтения файла '{filepath}'. Попробуйте снова.")
-        except Exception as e:
-            print(f"Ошибка при чтении файла: {e}. Попробуйте снова.")
+    """Чтение чисел из файла. Если путь не указан, используется data.txt в папке скрипта."""
+    filepath = input("Введите путь к файлу (Enter — data.txt в папке скрипта): ").strip()
+    
+    # Если путь пустой, подставляем data.txt в директории скрипта
+    if not filepath:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        filepath = os.path.join(script_dir, "data.txt")
+        print(f"Используется файл по умолчанию: {filepath}")
+    
+    numbers = []
+    try:
+        with open(filepath, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                for token in line.split():
+                    try:
+                        num = float(token)
+                        if num == int(num):
+                            numbers.append(int(num))
+                        else:
+                            numbers.append(num)
+                    except ValueError:
+                        print(f"Предупреждение: пропущено нечисловое значение: '{token}'", file=sys.stderr)
+        if not numbers:
+            print(f"Ошибка: файл '{filepath}' не содержит чисел.")
+            return None
+        return numbers
+    except FileNotFoundError:
+        print(f"Ошибка: файл '{filepath}' не найден.")
+        return None
+    except PermissionError:
+        print(f"Ошибка: нет прав для чтения файла '{filepath}'.")
+        return None
+    except Exception as e:
+        print(f"Ошибка при чтении файла: {e}.")
+        return None
 
 def manual_input():
     """Ручной ввод чисел через терминал."""
@@ -119,9 +122,8 @@ def write_output(numbers):
         
         if choice == '1':
             while True:
-                filepath = input("Введите путь для сохранения файла (Enter — авто в папке скрипта): ").strip()
+                filepath = input("Введите путь для сохранения (Enter — sorted_output.txt в папке скрипта): ").strip()
                 
-                # Если путь не указан, создаём файл в папке со скриптом
                 if not filepath:
                     script_dir = os.path.dirname(os.path.abspath(__file__))
                     filepath = os.path.join(script_dir, "sorted_output.txt")
@@ -164,6 +166,9 @@ def main():
         if choice == '1':
             print("\n--- Загрузка из файла ---")
             data = read_numbers_from_file()
+            if data is None:
+                # Ошибка уже выведена, возвращаемся в меню
+                continue
             
         elif choice == '2':
             print("\n--- Ручной ввод ---")
@@ -184,14 +189,14 @@ def main():
         print(f"\nИсходный массив ({len(data)} элементов): {data[:20]}{'...' if len(data) > 20 else ''}")
         
         # Сортировка
-        start_time = time.time()
+        start = time.time()
         sorted_data = binary_tree_sort(data)
-        end_time = time.time()
-        
+        end = time.time()
+
         # Вывод результата
         write_output(sorted_data)
-        print(f"\nВремя сортировки: {end_time - start_time:.6f} секунд.")
-        
+        print(f"Время сортировки: {end - start:.6f} секунд")
+
         # Возврат в меню
         input("\nНажмите Enter для возврата в меню...")
 
