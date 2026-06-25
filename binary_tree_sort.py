@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Binary Tree Sort с интерактивным меню.
-При загрузке из файла: Enter → data.txt в папке скрипта.
-"""
-
 import sys
 import os
 import time
