@@ -1,6 +1,13 @@
+#!/usr/bin/env python3
+"""
+Binary Tree Sort с меню, загрузкой из data.txt,
+обязательным сравнением с sorted() и генерацией случайных чисел.
+"""
+
 import sys
 import os
 import time
+import random
 
 class TreeNode:
     """Узел бинарного дерева поиска."""
@@ -27,7 +34,7 @@ def inorder_traversal(root, sorted_list):
         inorder_traversal(root.right, sorted_list)
 
 def binary_tree_sort(arr):
-    """Сортировка массива через BST."""
+    """Сортировка массива через BST. Возвращает отсортированный список."""
     if not arr:
         return []
     root = None
@@ -37,25 +44,14 @@ def binary_tree_sort(arr):
     inorder_traversal(root, result)
     return result
 
-def verify_sort(original, sorted_data):
-    """
-    Проверяет корректность сортировки путем сравнения с встроенной сортировкой.
-    Возвращает кортеж (is_correct, builtin_sorted).
-    """
-    builtin_sorted = sorted(original)
-    is_correct = (sorted_data == builtin_sorted)
-    return is_correct, builtin_sorted
-
 def read_numbers_from_file():
-    """Чтение чисел из файла. Если путь не указан, используется data.txt в папке скрипта."""
+    """Чтение чисел из файла. Enter → data.txt в папке скрипта."""
     filepath = input("Введите путь к файлу (Enter — data.txt в папке скрипта): ").strip()
-    
-    # Если путь пустой, подставляем data.txt в директории скрипта
     if not filepath:
         script_dir = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(script_dir, "data.txt")
         print(f"Используется файл по умолчанию: {filepath}")
-    
+
     numbers = []
     try:
         with open(filepath, 'r') as f:
@@ -91,47 +87,100 @@ def manual_input():
     print("\nВведите числа через пробел или по одному в строке.")
     print("Для завершения ввода нажмите Enter на пустой строке.\n")
     numbers = []
-    
     while True:
         try:
             line = input()
         except EOFError:
             break
-        
         if not line.strip():
             if numbers:
                 break
             else:
                 print("Вы ещё не ввели ни одного числа. Введите числа или нажмите Ctrl+C для выхода.")
                 continue
-        
         for token in line.split():
             try:
                 num = float(token)
                 numbers.append(int(num) if num == int(num) else num)
             except ValueError:
                 print(f"Предупреждение: '{token}' — не число, пропущено.", file=sys.stderr)
-    
     return numbers
+
+def generate_random_numbers():
+    """Генерация случайного списка чисел заданного размера."""
+    while True:
+        try:
+            n = input("Введите количество случайных чисел (по умолчанию 10000): ").strip()
+            if not n:
+                n = 10000
+            else:
+                n = int(n)
+            if n <= 0:
+                print("Количество должно быть положительным.")
+                continue
+            break
+        except ValueError:
+            print("Введите целое число.")
+    
+    min_val = input("Минимальное значение (Enter = 0): ").strip()
+    max_val = input("Максимальное значение (Enter = 99999): ").strip()
+    
+    min_val = float(min_val) if min_val else 0.0
+    max_val = float(max_val) if max_val else 99999.0
+    if min_val > max_val:
+        min_val, max_val = max_val, min_val
+    
+    data = [random.randint(int(min_val), int(max_val)) for _ in range(n)]
+    print(f"Сгенерирован массив из {len(data)} целых чисел в диапазоне [{int(min_val)}, {int(max_val)}].")
+    return data
+
+def compare_sorts(data):
+    """Сравнивает Binary Tree Sort и встроенную sorted() по времени и корректности."""
+    if not data:
+        return
+    
+    # Замер времени Binary Tree Sort
+    data_copy = data[:]
+    start = time.perf_counter()
+    sorted_bt = binary_tree_sort(data_copy)
+    bt_time = time.perf_counter() - start
+    
+    # Замер времени встроенной сортировки
+    start = time.perf_counter()
+    sorted_builtin = sorted(data)
+    builtin_time = time.perf_counter() - start
+    
+    correct = (sorted_bt == sorted_builtin)
+    
+    print("\n" + "=" * 50)
+    print("         Сравнение сортировок")
+    print("=" * 50)
+    print(f"Размер массива: {len(data)} элементов")
+    print(f"Binary Tree Sort: {bt_time:.6f} сек")
+    print(f"Встроенная sorted(): {builtin_time:.6f} сек")
+    if correct:
+        print("Результаты совпадают — сортировка выполнена верно.")
+    else:
+        print("ОШИБКА: результаты не совпадают!")
+    print("-" * 50)
+    print("Первые 10 элементов отсортированного массива:")
+    print(sorted_bt[:10])
+    print("-" * 50)
 
 def write_output(numbers):
     """Запись отсортированных чисел в файл или вывод в консоль."""
     print("\nСохранить результат в файл?")
     print("1. Да")
     print("2. Нет (вывести в консоль)")
-    
     while True:
         choice = input("Ваш выбор (1/2): ").strip()
-        
         if choice == '1':
             while True:
                 filepath = input("Введите путь для сохранения (Enter — sorted_output.txt в папке скрипта): ").strip()
-                
                 if not filepath:
                     script_dir = os.path.dirname(os.path.abspath(__file__))
                     filepath = os.path.join(script_dir, "sorted_output.txt")
                     print(f"Путь не указан. Файл будет создан как '{filepath}'")
-                
                 try:
                     with open(filepath, 'w') as f:
                         for num in numbers:
@@ -142,7 +191,6 @@ def write_output(numbers):
                     print(f"Ошибка: нет прав для записи в '{filepath}'. Попробуйте снова.")
                 except Exception as e:
                     print(f"Ошибка при записи файла: {e}. Попробуйте снова.")
-        
         elif choice == '2':
             print(f"\nОтсортированный массив ({len(numbers)} элементов):")
             print(numbers[:50] if len(numbers) <= 50 else f"{numbers[:50]}... (показаны первые 50)")
@@ -151,84 +199,61 @@ def write_output(numbers):
             print("Неверный выбор. Введите 1 или 2.")
 
 def show_menu():
-    """Отображение главного меню."""
+    """Главное меню."""
     print("\n" + "=" * 50)
     print("           Binary Tree Sort")
     print("=" * 50)
     print("1. Загрузить числа из файла")
     print("2. Ввести числа вручную")
-    print("3. Выход")
+    print("3. Генерация случайных чисел")
+    print("4. Выход")
     print("=" * 50)
 
 def main():
-    """Главная функция с меню выбора."""
     while True:
         show_menu()
-        choice = input("Ваш выбор (1/2/3): ").strip()
+        choice = input("Ваш выбор (1/2/3/4): ").strip()
         
         if choice == '1':
             print("\n--- Загрузка из файла ---")
             data = read_numbers_from_file()
             if data is None:
                 continue
+            print(f"\nИсходный массив ({len(data)} элементов): {data[:20]}{'...' if len(data) > 20 else ''}")
+            sorted_data = binary_tree_sort(data)
+            write_output(sorted_data)
+            # Всегда выполняем сравнение
+            print("\nСравнение с встроенной сортировкой (sorted)...")
+            compare_sorts(data)
+            input("\nНажмите Enter для возврата в меню...")
             
         elif choice == '2':
             print("\n--- Ручной ввод ---")
             data = manual_input()
+            if not data:
+                print("Ошибка: нет данных для сортировки.")
+                continue
+            print(f"\nИсходный массив ({len(data)} элементов): {data[:20]}{'...' if len(data) > 20 else ''}")
+            sorted_data = binary_tree_sort(data)
+            write_output(sorted_data)
+            print("\nСравнение с встроенной сортировкой (sorted)...")
+            compare_sorts(data)
+            input("\nНажмите Enter для возврата в меню...")
             
         elif choice == '3':
+            print("\n--- Генерация случайных чисел ---")
+            data = generate_random_numbers()
+            if not data:
+                continue
+            # Здесь сравнение уже основная цель, вызовем явно
+            compare_sorts(data)
+            input("\nНажмите Enter для возврата в меню...")
+            
+        elif choice == '4':
             print("До свидания!")
             sys.exit(0)
-        
         else:
-            print("Неверный выбор. Введите 1, 2 или 3.")
-            continue
-        
-        if not data:
-            print("Ошибка: нет данных для сортировки.")
-            continue
-        
-        # Показываем первые элементы исходного массива
-        print(f"\nИсходный массив ({len(data)} элементов): {data[:20]}{'...' if len(data) > 20 else ''}")
-        
-        # Сортировка с помощью Binary Tree Sort
-        print("\n--- Выполняется Binary Tree Sort ---")
-        start_bt = time.time()
-        sorted_data_bt = binary_tree_sort(data)
-        end_bt = time.time()
-        time_bt = end_bt - start_bt
-        
-        # Проверка сортировки через встроенную сортировку
-        print("\n--- Проверка корректности сортировки ---")
-        start_check = time.time()
-        is_correct, builtin_sorted = verify_sort(data, sorted_data_bt)
-        end_check = time.time()
-        
-        # Вывод результатов проверки
-        print(f"Результат проверки: {'КОРРЕКТНО' if is_correct else 'НЕКОРРЕКТНО'}")
-        print(f"Время Binary Tree Sort: {time_bt:.6f} секунд")
-        print(f"Время встроенной сортировки: {end_check - start_check:.6f} секунд")
-        
-        if not is_correct:
-            print("\nРезультаты не совпадают!")
-            print("Пример различий (первые 20 элементов):")
-            
-            # Находим первое расхождение
-            min_len = min(len(sorted_data_bt), len(builtin_sorted))
-            for i in range(min_len):
-                if sorted_data_bt[i] != builtin_sorted[i]:
-                    print(f"  Позиция {i}: BST={sorted_data_bt[i]}, builtin={builtin_sorted[i]}")
-                    break
-            
-            # Показываем первые 20 элементов для сравнения
-            print(f"  BST (первые 20): {sorted_data_bt[:20]}")
-            print(f"  Builtin (первые 20): {builtin_sorted[:20]}")
-        
-        # Вывод результата
-        write_output(sorted_data_bt)
-
-        # Возврат в меню
-        input("\nНажмите Enter для возврата в меню...")
+            print("Неверный выбор. Введите 1, 2, 3 или 4.")
 
 if __name__ == "__main__":
     try:
