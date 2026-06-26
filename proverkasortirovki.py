@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-Binary Tree Sort с меню, загрузкой из data.txt,
-обязательным сравнением с sorted() и генерацией случайных чисел.
-Все массивы отображаются полностью.
-"""
-
 import sys
 import os
 import time
@@ -157,16 +150,16 @@ def compare_sorts(data):
     print("         Сравнение сортировок")
     print("=" * 50)
     print(f"Размер массива: {len(data)} элементов")
+    print("-" * 50)
+    print("Отсортированный массив (полностью):")
+    print(sorted_bt)
+    print("-" * 50)
     print(f"Binary Tree Sort: {bt_time:.6f} сек")
     print(f"Встроенная sorted(): {builtin_time:.6f} сек")
     if correct:
         print("Результаты совпадают — сортировка выполнена верно.")
     else:
         print("ОШИБКА: результаты не совпадают!")
-    print("-" * 50)
-    print("Отсортированный массив (полностью):")
-    print(sorted_bt)
-    print("-" * 50)
 
 def write_output(numbers):
     """Запись отсортированных чисел в файл или вывод в консоль (полностью)."""
@@ -206,7 +199,7 @@ def show_menu():
     print("=" * 50)
     print("1. Загрузить числа из файла")
     print("2. Ввести числа вручную")
-    print("3. Генерация случайных чисел + сравнение сортировок")
+    print("3. Генерация случайных чисел")
     print("4. Выход")
     print("=" * 50)
 
