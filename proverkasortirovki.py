@@ -2,6 +2,7 @@
 """
 Binary Tree Sort с меню, загрузкой из data.txt,
 обязательным сравнением с sorted() и генерацией случайных чисел.
+Все массивы отображаются полностью.
 """
 
 import sys
@@ -163,12 +164,12 @@ def compare_sorts(data):
     else:
         print("ОШИБКА: результаты не совпадают!")
     print("-" * 50)
-    print("Первые 10 элементов отсортированного массива:")
-    print(sorted_bt[:10])
+    print("Отсортированный массив (полностью):")
+    print(sorted_bt)
     print("-" * 50)
 
 def write_output(numbers):
-    """Запись отсортированных чисел в файл или вывод в консоль."""
+    """Запись отсортированных чисел в файл или вывод в консоль (полностью)."""
     print("\nСохранить результат в файл?")
     print("1. Да")
     print("2. Нет (вывести в консоль)")
@@ -193,7 +194,7 @@ def write_output(numbers):
                     print(f"Ошибка при записи файла: {e}. Попробуйте снова.")
         elif choice == '2':
             print(f"\nОтсортированный массив ({len(numbers)} элементов):")
-            print(numbers[:50] if len(numbers) <= 50 else f"{numbers[:50]}... (показаны первые 50)")
+            print(numbers)
             return
         else:
             print("Неверный выбор. Введите 1 или 2.")
@@ -205,7 +206,7 @@ def show_menu():
     print("=" * 50)
     print("1. Загрузить числа из файла")
     print("2. Ввести числа вручную")
-    print("3. Генерация случайных чисел")
+    print("3. Генерация случайных чисел + сравнение сортировок")
     print("4. Выход")
     print("=" * 50)
 
@@ -219,7 +220,8 @@ def main():
             data = read_numbers_from_file()
             if data is None:
                 continue
-            print(f"\nИсходный массив ({len(data)} элементов): {data[:20]}{'...' if len(data) > 20 else ''}")
+            print(f"\nИсходный массив ({len(data)} элементов):")
+            print(data)
             sorted_data = binary_tree_sort(data)
             write_output(sorted_data)
             # Всегда выполняем сравнение
@@ -233,7 +235,8 @@ def main():
             if not data:
                 print("Ошибка: нет данных для сортировки.")
                 continue
-            print(f"\nИсходный массив ({len(data)} элементов): {data[:20]}{'...' if len(data) > 20 else ''}")
+            print(f"\nИсходный массив ({len(data)} элементов):")
+            print(data)
             sorted_data = binary_tree_sort(data)
             write_output(sorted_data)
             print("\nСравнение с встроенной сортировкой (sorted)...")
@@ -245,7 +248,7 @@ def main():
             data = generate_random_numbers()
             if not data:
                 continue
-            # Здесь сравнение уже основная цель, вызовем явно
+            # Сравнение – основная цель пункта
             compare_sorts(data)
             input("\nНажмите Enter для возврата в меню...")
             
