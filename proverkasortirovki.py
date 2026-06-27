@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+Binary Tree Sort с меню, загрузкой из data.txt,
+обязательным сравнением с sorted() и сравнением на наборах 1K, 10K, 100K.
+"""
+
 import sys
 import os
 import time
@@ -100,46 +106,19 @@ def manual_input():
                 print(f"Предупреждение: '{token}' — не число, пропущено.", file=sys.stderr)
     return numbers
 
-def generate_random_numbers():
-    """Генерация случайного списка чисел заданного размера."""
-    while True:
-        try:
-            n = input("Введите количество случайных чисел (по умолчанию 10000): ").strip()
-            if not n:
-                n = 10000
-            else:
-                n = int(n)
-            if n <= 0:
-                print("Количество должно быть положительным.")
-                continue
-            break
-        except ValueError:
-            print("Введите целое число.")
-    
-    min_val = input("Минимальное значение (Enter = 0): ").strip()
-    max_val = input("Максимальное значение (Enter = 99999): ").strip()
-    
-    min_val = float(min_val) if min_val else 0.0
-    max_val = float(max_val) if max_val else 99999.0
-    if min_val > max_val:
-        min_val, max_val = max_val, min_val
-    
-    data = [random.randint(int(min_val), int(max_val)) for _ in range(n)]
-    print(f"Сгенерирован массив из {len(data)} целых чисел в диапазоне [{int(min_val)}, {int(max_val)}].")
-    return data
-
-def compare_sorts(data):
-    """Сравнивает Binary Tree Sort и встроенную sorted() по времени и корректности."""
+def compare_sorts(data, show_array=True):
+    """
+    Сравнивает Binary Tree Sort и встроенную sorted() по времени и корректности.
+    Если show_array=True, выводит полный отсортированный массив.
+    """
     if not data:
         return
     
-    # Замер времени Binary Tree Sort
     data_copy = data[:]
     start = time.perf_counter()
     sorted_bt = binary_tree_sort(data_copy)
     bt_time = time.perf_counter() - start
     
-    # Замер времени встроенной сортировки
     start = time.perf_counter()
     sorted_builtin = sorted(data)
     builtin_time = time.perf_counter() - start
@@ -150,16 +129,35 @@ def compare_sorts(data):
     print("         Сравнение сортировок")
     print("=" * 50)
     print(f"Размер массива: {len(data)} элементов")
-    print("-" * 50)
-    print("Отсортированный массив (полностью):")
-    print(sorted_bt)
-    print("-" * 50)
     print(f"Binary Tree Sort: {bt_time:.6f} сек")
     print(f"Встроенная sorted(): {builtin_time:.6f} сек")
     if correct:
         print("Результаты совпадают — сортировка выполнена верно.")
     else:
         print("ОШИБКА: результаты не совпадают!")
+    print("-" * 50)
+    if show_array:
+        print("Отсортированный массив (полностью):")
+        print(sorted_bt)
+        print("-" * 50)
+
+def compare_multiple_sizes():
+    """Сравнение на наборах 1K, 10K, 100K чисел."""
+    print("\n--- Сравнение на наборах разного размера ---")
+    min_val = input("Минимальное значение (Enter = 0): ").strip()
+    max_val = input("Максимальное значение (Enter = 99999): ").strip()
+    
+    min_val = int(min_val) if min_val else 0
+    max_val = int(max_val) if max_val else 99999
+    if min_val > max_val:
+        min_val, max_val = max_val, min_val
+    
+    sizes = [1000, 10000, 100000, 1000000]  # 1K, 10K, 100K, 1M
+    for size in sizes:
+        print(f"\n>>> Генерация массива из {size} чисел...")
+        data = [random.randint(min_val, max_val) for _ in range(size)]
+        compare_sorts(data, show_array=False)  # без вывода массива
+        print()
 
 def write_output(numbers):
     """Запись отсортированных чисел в файл или вывод в консоль (полностью)."""
@@ -217,9 +215,8 @@ def main():
             print(data)
             sorted_data = binary_tree_sort(data)
             write_output(sorted_data)
-            # Всегда выполняем сравнение
             print("\nСравнение с встроенной сортировкой (sorted)...")
-            compare_sorts(data)
+            compare_sorts(data, show_array=True)
             input("\nНажмите Enter для возврата в меню...")
             
         elif choice == '2':
@@ -233,16 +230,11 @@ def main():
             sorted_data = binary_tree_sort(data)
             write_output(sorted_data)
             print("\nСравнение с встроенной сортировкой (sorted)...")
-            compare_sorts(data)
+            compare_sorts(data, show_array=True)
             input("\nНажмите Enter для возврата в меню...")
             
         elif choice == '3':
-            print("\n--- Генерация случайных чисел ---")
-            data = generate_random_numbers()
-            if not data:
-                continue
-            # Сравнение – основная цель пункта
-            compare_sorts(data)
+            compare_multiple_sizes()
             input("\nНажмите Enter для возврата в меню...")
             
         elif choice == '4':
